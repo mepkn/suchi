@@ -24,8 +24,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   value="${value%\"}"; value="${value#\"}"; value="${value%\'}"; value="${value#\'}"
   export "$key=$value"
 done < .env.prod.local
-# CONVEX_DEPLOY_KEY is optional: without it, the logged-in Convex CLI deploys to
-# this project's production deployment.
+: "${CONVEX_DEPLOY_KEY:?CONVEX_DEPLOY_KEY is not set in .env.prod.local}"
 : "${DEPLOY_HOST:?DEPLOY_HOST is not set in .env.prod.local}"
 : "${DEPLOY_PORT:?DEPLOY_PORT is not set in .env.prod.local}"
 : "${DEPLOY_DIR:?DEPLOY_DIR is not set in .env.prod.local}"

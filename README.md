@@ -45,7 +45,7 @@ https://suchi.pknspace.com.
 
 `scripts/deploy.sh` deploys `convex/` to production, builds the site with that deployment's
 URL, and syncs `dist/` to the VPS. Settings live in `.env.prod.local` (git-ignored, see
-`.env.example`): optional `CONVEX_DEPLOY_KEY` (Convex dashboard → Production → Settings → Deploy Keys; without it the logged-in CLI is used)
+`.env.example`): `CONVEX_DEPLOY_KEY` (`npx convex deployment token create suchi-deploy --deployment praveen-nirmalkar:suchi:production --save-env .env.prod.local`)
 and `DEPLOY_HOST` / `DEPLOY_PORT` / `DEPLOY_DIR`. Routes are client-side, so Caddy needs an SPA
 fallback:
 
