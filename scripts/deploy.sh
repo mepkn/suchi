@@ -24,7 +24,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   value="${value%\"}"; value="${value#\"}"; value="${value%\'}"; value="${value#\'}"
   export "$key=$value"
 done < .env.prod.local
-: "${CONVEX_DEPLOY_KEY:?CONVEX_DEPLOY_KEY is not set in .env.prod.local}"
+# CONVEX_DEPLOY_KEY is optional: without it, the logged-in Convex CLI deploys to
+# this project's production deployment.
 : "${DEPLOY_HOST:?DEPLOY_HOST is not set in .env.prod.local}"
 : "${DEPLOY_PORT:?DEPLOY_PORT is not set in .env.prod.local}"
 : "${DEPLOY_DIR:?DEPLOY_DIR is not set in .env.prod.local}"
@@ -36,7 +37,7 @@ npm run check
 
 if [ -n "${DRY_RUN:-}" ]; then
   echo "› Backend (dry run)"
-  npx convex deploy --dry-run
+  npx convex deploy -y --dry-run
   echo "› Upload (dry run, using a local build)"
   npm run build
   rsync -avz --delete --dry-run -e "ssh -p $DEPLOY_PORT" dist/ "$DEPLOY_HOST:$DEPLOY_DIR/"
