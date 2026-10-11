@@ -48,6 +48,18 @@ async function renumber(ctx: MutationCtx, ordered: Doc<"items">[], key: "positio
   }
 }
 
+/** Titles compare case-insensitively with runs of whitespace collapsed. */
+export function titleKey(title: string) {
+  return title.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/** Throws if another item in the list already has this title. */
+function assertUniqueTitle(items: Doc<"items">[], title: string, exceptId?: Id<"items">) {
+  const key = titleKey(title);
+  const clash = items.find((i) => i._id !== exceptId && titleKey(i.title) === key);
+  if (clash) throw new ConvexError(`"${clash.title}" is already in this list.`);
+}
+
 function inTier(items: Doc<"items">[], tier: number | undefined) {
   return items.filter((i) => i.tier === tier).sort((a, b) => a.tierPosition - b.tierPosition);
 }
@@ -76,6 +88,7 @@ export const create = mutation({
     await getOwnedList(ctx, listId);
     const items = await listItems(ctx, listId);
     const c = clean(f);
+    assertUniqueTitle(items, c.title!);
     return ctx.db.insert("items", {
       listId,
       title: c.title!,
@@ -94,8 +107,10 @@ export const create = mutation({
 export const update = mutation({
   args: { id: v.id("items"), ...fields, title: v.optional(v.string()) },
   handler: async (ctx, { id, ...f }) => {
-    await getOwnedItem(ctx, id);
-    await ctx.db.patch(id, clean(f));
+    const { item } = await getOwnedItem(ctx, id);
+    const c = clean(f);
+    if (c.title !== undefined) assertUniqueTitle(await listItems(ctx, item.listId), c.title, id);
+    await ctx.db.patch(id, c);
   },
 });
 

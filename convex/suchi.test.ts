@@ -101,6 +101,21 @@ describe("items", () => {
     expect(item).not.toHaveProperty("note");
     await expect(alice.mutation(api.items.create, { listId, title: " " })).rejects.toThrow("Title");
   });
+
+  test("titles are unique within a list, ignoring case and spacing", async () => {
+    const t = newTest();
+    const alice = await signedInUser(t, "alice@example.com");
+    const { listId, ids } = await listWith(alice, ["Heat", "Ronin"]);
+    await expect(alice.mutation(api.items.create, { listId, title: " heat  " })).rejects.toThrow(
+      '"Heat" is already in this list.',
+    );
+    await expect(alice.mutation(api.items.update, { id: ids[1], title: "HEAT" })).rejects.toThrow("already");
+    // Renaming an item to itself (or a case change of itself) is fine.
+    await alice.mutation(api.items.update, { id: ids[0], title: "heat" });
+    // The same title is allowed in a different list.
+    const other = await listWith(alice, ["Heat"]);
+    expect(await titles(alice, other.listId)).toEqual(["Heat"]);
+  });
 });
 
 describe("ranked order", () => {
