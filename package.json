@@ -11,6 +11,10 @@
     "typecheck": "tsc -b && tsc -p convex --noEmit",
     "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy",
+    "deploy": "scripts/deploy.sh",
+    "deploy:dry": "DRY_RUN=1 scripts/deploy.sh",
     "setup:auth": "node scripts/setup-auth-keys.ts --apply"
   },
   "engines": {

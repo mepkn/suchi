@@ -22,7 +22,7 @@ Vite + React 19 + TypeScript, Tailwind v4, shadcn/ui (Base UI), dnd-kit, Convex 
 
 ```sh
 npm install
-npx convex dev            # first run: choose a local deployment; keep it running
+npm run convex:dev        # local backend only (nothing on Convex cloud in dev); keep it running
 npm run setup:auth        # once per deployment: JWT_PRIVATE_KEY + JWKS
 npx convex env set SITE_URL http://localhost:5173
 npx convex env set ALLOWED_EMAILS you@example.com
@@ -33,6 +33,28 @@ npm run dev               # http://localhost:5173
 | --- | --- |
 | `npm run check` | Typecheck, lint, tests |
 | `npm test` | Vitest (Convex functions + reorder helpers) |
+| `npm run convex:dev` / `convex:deploy` | Push backend functions to Convex |
+| `npm run deploy` | Checks, deploys Convex to production, builds and uploads to the VPS |
+| `npm run deploy:dry` | Same, but only previews: nothing is deployed or uploaded |
+
+## Deployment
+
+Development runs entirely on a local Convex backend. Production is the Convex cloud
+deployment of the `suchi` project, and the site is served by Caddy at
+https://suchi.pknspace.com.
+
+`scripts/deploy.sh` deploys `convex/` to production, builds the site with that deployment's
+URL, and syncs `dist/` to the VPS. Settings live in `.env.prod.local` (git-ignored, see
+`.env.example`): `CONVEX_DEPLOY_KEY` (Convex dashboard → Production → Settings → Deploy Keys)
+and `DEPLOY_HOST` / `DEPLOY_PORT` / `DEPLOY_DIR`. Routes are client-side, so Caddy needs an SPA
+fallback:
+
+```
+try_files {path} /index.html
+```
+
+Production env vars: `JWT_PRIVATE_KEY`/`JWKS` (`node scripts/setup-auth-keys.ts --apply --prod`),
+`SITE_URL=https://suchi.pknspace.com` and `ALLOWED_EMAILS`.
 
 ## Ordering
 
