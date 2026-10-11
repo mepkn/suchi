@@ -3,6 +3,7 @@ import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { getOwnedItem, getOwnedList } from "./lib/access";
 import { moveIndex } from "./lib/order";
+import { titleKey } from "./lib/titles";
 import { sortForMode } from "./lists";
 
 const fields = {
@@ -46,11 +47,6 @@ async function renumber(ctx: MutationCtx, ordered: Doc<"items">[], key: "positio
   for (const [i, item] of ordered.entries()) {
     if (item[key] !== i) await ctx.db.patch(item._id, { [key]: i });
   }
-}
-
-/** Titles compare case-insensitively with runs of whitespace collapsed. */
-export function titleKey(title: string) {
-  return title.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 /** Throws if another item in the list already has this title. */
@@ -101,6 +97,44 @@ export const create = mutation({
       tierPosition: inTier(items, undefined).length,
       done: false,
     });
+  },
+});
+
+/**
+ * Adds many titles at once (pasted from a note). Titles already in the list, or repeated in
+ * the paste, are skipped rather than failing the whole import.
+ */
+export const createMany = mutation({
+  args: { listId: v.id("lists"), items: v.array(v.object({ title: v.string(), done: v.optional(v.boolean()) })) },
+  handler: async (ctx, { listId, items: incoming }) => {
+    await getOwnedList(ctx, listId);
+    if (incoming.length > 1000) throw new ConvexError("Import at most 1000 items at a time.");
+    const items = await listItems(ctx, listId);
+    const seen = new Set(items.map((i) => titleKey(i.title)));
+    let position = items.length;
+    let tierPosition = inTier(items, undefined).length;
+    let added = 0;
+    let skipped = 0;
+    for (const { title: raw, done } of incoming) {
+      const title = raw.trim().replace(/\s+/g, " ");
+      const key = titleKey(title);
+      if (!title || title.length > 200 || seen.has(key)) {
+        skipped++;
+        continue;
+      }
+      seen.add(key);
+      await ctx.db.insert("items", {
+        listId,
+        title,
+        tags: [],
+        position: position++,
+        tier: undefined,
+        tierPosition: tierPosition++,
+        done: done ?? false,
+      });
+      added++;
+    }
+    return { added, skipped };
   },
 });
 

@@ -118,6 +118,33 @@ describe("items", () => {
   });
 });
 
+describe("import", () => {
+  test("adds new titles at the bottom and skips duplicates", async () => {
+    const t = newTest();
+    const alice = await signedInUser(t, "alice@example.com");
+    const { listId } = await listWith(alice, ["Heat"]);
+    const res = await alice.mutation(api.items.createMany, {
+      listId,
+      items: [{ title: " heat " }, { title: "Ronin", done: true }, { title: "ronin" }, { title: "  " }, { title: "Alien" }],
+    });
+    expect(res).toEqual({ added: 2, skipped: 3 });
+    const r = (await alice.query(api.items.byList, { listId }))!;
+    expect(r.map((i) => [i.title, i.position, i.done])).toEqual([
+      ["Heat", 0, false],
+      ["Ronin", 1, true],
+      ["Alien", 2, false],
+    ]);
+  });
+
+  test("only the owner can import", async () => {
+    const t = newTest();
+    const alice = await signedInUser(t, "alice@example.com");
+    const bob = await signedInUser(t, "bob@example.com");
+    const { listId } = await listWith(alice, []);
+    await expect(bob.mutation(api.items.createMany, { listId, items: [{ title: "x" }] })).rejects.toThrow("List not found");
+  });
+});
+
 describe("ranked order", () => {
   test("moving renumbers positions 0..N-1", async () => {
     const t = newTest();

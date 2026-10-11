@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { ArrowLeftIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon, ClipboardPasteIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ImportDialog } from "@/components/ImportDialog";
 import { ItemSheet } from "@/components/ItemSheet";
 import { ListFormDialog } from "@/components/ListFormDialog";
 import { ModePicker } from "@/components/ModePicker";
@@ -53,6 +54,7 @@ function LoadedList({ list, items }: { list: List; items: Item[] }) {
   const remove = useMutation(api.lists.remove);
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [openId, setOpenId] = useState<Id<"items"> | null>(null);
   const open = items.find((i) => i._id === openId) ?? null;
   const onOpen = (item: Item) => setOpenId(item._id);
@@ -76,6 +78,9 @@ function LoadedList({ list, items }: { list: List; items: Item[] }) {
               <DropdownMenuItem onClick={() => setEditing(true)}>
                 <PencilIcon /> Edit name & emoji
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setImporting(true)}>
+                <ClipboardPasteIcon /> Import items
+              </DropdownMenuItem>
               <DropdownMenuItem variant="destructive" onClick={() => setConfirming(true)}>
                 <Trash2Icon /> Delete list
               </DropdownMenuItem>
@@ -94,7 +99,7 @@ function LoadedList({ list, items }: { list: List; items: Item[] }) {
 
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed px-6 py-12 text-center text-sm text-muted-foreground">
-          Nothing here yet. Add your first item above.
+          Nothing here yet. Add your first item above, or paste many with ⋯ → Import items.
         </p>
       ) : list.mode === "ranked" ? (
         <RankedView items={items} onOpen={onOpen} />
@@ -105,6 +110,7 @@ function LoadedList({ list, items }: { list: List; items: Item[] }) {
       )}
 
       <ItemSheet item={open} onClose={() => setOpenId(null)} />
+      <ImportDialog open={importing} onOpenChange={setImporting} list={list} items={items} />
       <ListFormDialog open={editing} onOpenChange={setEditing} list={list} />
       <ConfirmDialog
         open={confirming}
