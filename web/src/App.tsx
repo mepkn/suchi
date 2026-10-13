@@ -8,7 +8,7 @@ import { Logo } from "@/components/Logo";
 import { SignInPage } from "@/components/SignInPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { navigate, parseListId, usePath } from "@/lib/router";
-import type { Id } from "../convex/_generated/dataModel";
+import type { Id } from "@convex/_generated/dataModel";
 
 function Shell() {
   const listId = parseListId(usePath());

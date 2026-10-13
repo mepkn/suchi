@@ -1,5 +1,5 @@
 import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@convex/_generated/api";
 import { applyRankedMove, applyTieredMove } from "@/lib/reorder";
 
 /** Move mutations that reorder the cached list right away, so drops don't snap back. */

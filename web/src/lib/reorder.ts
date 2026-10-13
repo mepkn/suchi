@@ -1,4 +1,4 @@
-import { moveIndex } from "../../convex/lib/order";
+import { moveIndex } from "@convex/lib/order";
 import type { Item } from "./types";
 
 /** Client copies of the server's moves, for optimistic updates. Inputs are byList results. */

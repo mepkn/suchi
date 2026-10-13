@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     // convex-test runs functions in the same runtime Convex uses.
     environment: "edge-runtime",
-    include: ["convex/**/*.test.ts", "src/lib/**/*.test.ts"],
+    include: ["convex/**/*.test.ts"],
   },
 });

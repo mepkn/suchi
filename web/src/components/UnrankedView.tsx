@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { CheckIcon } from "lucide-react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@convex/_generated/api";
 import { ItemContent } from "@/components/ItemContent";
 import { storage } from "@/lib/storage";
 import type { Item } from "@/lib/types";
