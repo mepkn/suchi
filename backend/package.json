@@ -1,20 +1,15 @@
 {
-  "name": "suchi",
+  "name": "suchi-backend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm --prefix web run dev",
-    "build": "npm --prefix web run build",
-    "web:install": "npm --prefix web install",
+    "dev": "convex dev",
+    "deploy": "convex deploy",
     "lint": "eslint .",
     "typecheck": "tsc -p convex --noEmit",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm --prefix web run check",
-    "deploy": "scripts/deploy.sh",
-    "deploy:dry": "DRY_RUN=1 scripts/deploy.sh",
-    "convex:dev": "convex dev",
-    "convex:deploy": "convex deploy",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "setup:auth": "node scripts/setup-auth-keys.ts --apply"
   },
   "engines": {

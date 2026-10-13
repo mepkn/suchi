@@ -22,32 +22,37 @@ Requires Node 22.18+ (`.nvmrc` pins 22). Development runs entirely on a local Co
 backend; nothing is on Convex cloud except production.
 
 ```bash
+cd backend
 npm install
-npm run web:install          # the web app in web/ has its own install
-npm run convex:dev           # starts the local backend and pushes convex/; keep it running
+npm run dev                  # starts the local backend and pushes convex/ (keep it running)
 npm run setup:auth           # first time only: auth signing keys
 npx convex env set SITE_URL http://localhost:5173
 npx convex env set ALLOWED_EMAILS you@example.com
-npm run dev
+
+cd ../web
+npm install
+npm run dev                  # web app at http://localhost:5173
 ```
 
 ## Scripts
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Dev server at http://localhost:5173 |
-| `npm run build` | Typecheck and production build into `web/dist/` |
-| `npm run web:install` | Install the web app's dependencies |
-| `npm run convex:dev` / `convex:deploy` | Push backend functions to Convex |
-| `npm run lint` | ESLint |
-| `npm test` | Convex function tests (Vitest); the web app's run in `check` |
-| `npm run check` | Typecheck, lint and tests for the backend, then the web app |
-| `npm run deploy` | Checks, deploys Convex to production, builds and uploads to the VPS |
-| `npm run deploy:dry` | Same, but only previews: nothing is deployed or uploaded |
+| `backend/`: `npm run dev` | Local Convex backend; pushes `convex/` on every change |
+| `backend/`: `npm run deploy` | Push the functions to production (`scripts/deploy.sh` does this for you) |
+| `backend/`: `npm run setup:auth` | Auth signing keys (`node scripts/setup-auth-keys.ts --apply --prod` for production) |
+| `backend/`: `npm test` | Convex function tests (Vitest + convex-test) |
+| `backend/`: `npm run check` | Typecheck, lint and tests for `convex/` and `scripts/` |
+| `web/`: `npm run dev` | Dev server at http://localhost:5173 |
+| `web/`: `npm run build` | Typecheck and production build into `web/dist/` |
+| `web/`: `npm run check` | Typecheck, lint and tests |
+| `scripts/check.sh` | Both checks; run before committing |
+| `scripts/deploy.sh` | Checks, deploys Convex to production, builds and uploads to the VPS |
+| `DRY_RUN=1 scripts/deploy.sh` | Same, but only previews: nothing is deployed or uploaded |
 
 ## Deployment
 
-`scripts/deploy.sh` deploys `convex/` to the production deployment, builds the site with
+`scripts/deploy.sh` deploys `backend/convex/` to the production deployment, builds the site with
 that deployment's URL, and syncs `web/dist/` to the VPS, where Caddy serves
 https://suchi.pknspace.com. Settings live in `.env.prod.local` (git-ignored, see
 `.env.example`): `CONVEX_DEPLOY_KEY` (`npx convex deployment token create suchi-deploy
@@ -62,13 +67,13 @@ try_files {path} /index.html
 ## How it works
 
 - Auth is Convex Auth (Password). `ALLOWED_EMAILS` is checked at sign-up/sign-in and again on every
-  request (`convex/lib/access.ts`), so removing an email cuts off existing sessions.
+  request (`backend/convex/lib/access.ts`), so removing an email cuts off existing sessions.
 - Production env vars: `JWT_PRIVATE_KEY`/`JWKS` (`node scripts/setup-auth-keys.ts --apply --prod`),
   `SITE_URL=https://suchi.pknspace.com` and `ALLOWED_EMAILS`.
 
-- `convex/` holds the schema and functions (`lists`, `items`); `web/` is the Vite app and
+- `backend/convex/` holds the schema and functions (`lists`, `items`); `web/` is the Vite app and
   imports them as `@convex/...`.
 - Ordering: ranked order and tier order are stored separately as plain integers (`position`,
   and `tier` + `tierPosition`), so switching modes keeps both. A move renumbers the affected
-  items 0…N-1 in one mutation (`convex/lib/order.ts`); the client applies the same move
+  items 0…N-1 in one mutation (`backend/convex/lib/order.ts`); the client applies the same move
   optimistically (`web/src/lib/reorder.ts`) so drops don't snap back.
