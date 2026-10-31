@@ -5,7 +5,7 @@ when you want them to be.
 
 ## Features
 
-- Sign-in with email + password; only emails in `ALLOWED_EMAILS` can sign up, and each user sees only their own lists.
+- Sign-in with email + password; sign-up verifies the email with a 6-digit code and "Forgot password?" resets by code. Only emails in `ALLOWED_EMAILS` can sign up, and each user sees only their own lists.
 - Each list has a mode, and you can switch any time without losing anything:
   - **Ranked** — numbered 1…N, drag to reorder.
   - **Tiered** — S/A/B/C/D rows (rename, add, delete tiers), drag items between them.
@@ -69,8 +69,12 @@ try_files {path} /index.html
 
 - Auth is Convex Auth (Password). `ALLOWED_EMAILS` is checked at sign-up/sign-in and again on every
   request (`backend/convex/lib/access.ts`), so removing an email cuts off existing sessions.
+- Sign-up verifies the email with a 6-digit code, and "Forgot password?" resets by code
+  (`backend/convex/otp.ts`, Resend from `Suchi <noreply@send.pknspace.com>`; without `RESEND_API_KEY`
+  the code is only logged in the `convex dev` output). Users from before verification are marked
+  verified by the one-off `migrations:markUsersVerified`.
 - Production env vars: `JWT_PRIVATE_KEY`/`JWKS` (`node scripts/setup-auth-keys.ts --apply --prod`),
-  `SITE_URL=https://suchi.pknspace.com` and `ALLOWED_EMAILS`.
+  `SITE_URL=https://suchi.pknspace.com`, `ALLOWED_EMAILS` and `RESEND_API_KEY`.
 
 - `backend/convex/` holds the schema and functions (`lists`, `items`); `web/` is the Vite app and
   imports them as `@convex/...`.
