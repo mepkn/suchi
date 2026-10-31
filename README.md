@@ -71,8 +71,7 @@ try_files {path} /index.html
   request (`backend/convex/lib/access.ts`), so removing an email cuts off existing sessions.
 - Sign-up verifies the email with a 6-digit code, and "Forgot password?" resets by code
   (`backend/convex/otp.ts`, Resend from `Suchi <noreply@send.pknspace.com>`; without `RESEND_API_KEY`
-  the code is only logged in the `convex dev` output). Users from before verification are marked
-  verified by the one-off `migrations:markUsersVerified`.
+  the code is only logged in the `convex dev` output).
 - kunji tools (`backend/convex/kunji.ts`, contract in `lib/kunji.ts`): `list_lists`, `get_top` (read-only) and
   `add_to_list` (shares `insertItem` with the app; nothing deletes, reorders or edits). Routes `/kunji/tools`,
   `/kunji/access`, `/kunji/call` need `KUNJI_SECRET`; `KUNJI_URL` is the kunji deployment.

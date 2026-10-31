@@ -18,7 +18,6 @@ import type * as lib_kunji from "../lib/kunji.js";
 import type * as lib_order from "../lib/order.js";
 import type * as lib_titles from "../lib/titles.js";
 import type * as lists from "../lists.js";
-import type * as migrations from "../migrations.js";
 import type * as otp from "../otp.js";
 
 import type {
@@ -38,7 +37,6 @@ declare const fullApi: ApiFromModules<{
   "lib/order": typeof lib_order;
   "lib/titles": typeof lib_titles;
   lists: typeof lists;
-  migrations: typeof migrations;
   otp: typeof otp;
 }>;
 
