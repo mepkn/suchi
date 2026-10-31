@@ -73,8 +73,11 @@ try_files {path} /index.html
   (`backend/convex/otp.ts`, Resend from `Suchi <noreply@send.pknspace.com>`; without `RESEND_API_KEY`
   the code is only logged in the `convex dev` output). Users from before verification are marked
   verified by the one-off `migrations:markUsersVerified`.
+- kunji tools (`backend/convex/kunji.ts`, contract in `lib/kunji.ts`): `list_lists`, `get_top` (read-only) and
+  `add_to_list` (shares `insertItem` with the app; nothing deletes, reorders or edits). Routes `/kunji/tools`,
+  `/kunji/access`, `/kunji/call` need `KUNJI_SECRET`; `KUNJI_URL` is the kunji deployment.
 - Production env vars: `JWT_PRIVATE_KEY`/`JWKS` (`node scripts/setup-auth-keys.ts --apply --prod`),
-  `SITE_URL=https://suchi.pknspace.com`, `ALLOWED_EMAILS` and `RESEND_API_KEY`.
+  `SITE_URL=https://suchi.pknspace.com`, `ALLOWED_EMAILS`, `RESEND_API_KEY`, `KUNJI_SECRET` and `KUNJI_URL`.
 
 - `backend/convex/` holds the schema and functions (`lists`, `items`); `web/` is the Vite app and
   imports them as `@convex/...`.

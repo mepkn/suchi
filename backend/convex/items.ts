@@ -77,26 +77,33 @@ export const byList = query({
   },
 });
 
-/** New items go to the bottom of the ranking and the bottom of the unplaced pile. */
+/**
+ * New items go to the bottom of the ranking and the bottom of the unplaced pile.
+ * The caller has checked that the list is the user's (shared with kunji's add_to_list).
+ */
+export async function insertItem(ctx: MutationCtx, listId: Id<"lists">, f: Fields & { title: string }) {
+  const items = await listItems(ctx, listId);
+  const c = clean(f);
+  assertUniqueTitle(items, c.title!);
+  return ctx.db.insert("items", {
+    listId,
+    title: c.title!,
+    note: c.note,
+    url: c.url,
+    imageUrl: c.imageUrl,
+    tags: c.tags ?? [],
+    position: items.length,
+    tier: undefined,
+    tierPosition: inTier(items, undefined).length,
+    done: false,
+  });
+}
+
 export const create = mutation({
   args: { listId: v.id("lists"), ...fields },
   handler: async (ctx, { listId, ...f }) => {
     await getOwnedList(ctx, listId);
-    const items = await listItems(ctx, listId);
-    const c = clean(f);
-    assertUniqueTitle(items, c.title!);
-    return ctx.db.insert("items", {
-      listId,
-      title: c.title!,
-      note: c.note,
-      url: c.url,
-      imageUrl: c.imageUrl,
-      tags: c.tags ?? [],
-      position: items.length,
-      tier: undefined,
-      tierPosition: inTier(items, undefined).length,
-      done: false,
-    });
+    return await insertItem(ctx, listId, f);
   },
 });
 
